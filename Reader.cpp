@@ -32,7 +32,7 @@ bool Reader::parseFile(const char *fileName, int numThreads)
     // Create threads
     for (int thId = 0; thId < mNumThreads; ++thId)
     {
-        mThreads.push_back(std::thread(&Reader::_processLines, this));
+        mThreads.push_back(std::thread(&Reader::_processLines, this, thId, &buffer[thId]));
     }
 
     std::ifstream inptFile(mFileName);
@@ -40,24 +40,21 @@ bool Reader::parseFile(const char *fileName, int numThreads)
     {
         while ( getline(inptFile, line) )
         {
-            buffer[currBuffIndex].lines.push_back( line );
+            buffer[currBuffIndex].lines.push_back(line);
 
-	    // Change buffer if needed and mark current buffer as ready.
-	    if ( 5 == currBuffIndex )
-	    {
-	        int temp = currBuffIndex;
-	        currBuffIndex = (currBuffIndex + 1) % mNumThreads; 
-	        buffer[temp].isReady = true;
+            // Check if buffer is ready to be processed by thread.
+            if(buffer[currBuffIndex].lines.size()==1000)
+            {
+                std::cout<<"Filled:"<<currBuffIndex<<std::endl;
+                buffer[currBuffIndex].isReady=true;
+            }
+
+            // Find new buffer to fill.
+            while(buffer[currBuffIndex].isReady)
+            {
+                currBuffIndex=(currBuffIndex+1)%mNumThreads;
+            }
 	    }
-	}
-	stop = true;
-	// Check if current buffer has some remaining lines, if so, then
-	// process them here.
-	while ( buffer[currBuffIndex].lines.size() )
-	{
-            std::cout<<buffer[currBuffIndex].lines.front()<<std::endl;
-	    buffer[currBuffIndex].lines.erase(buffer[currBuffIndex].lines.begin());
-	}
         inptFile.close();
     }
     else
@@ -66,27 +63,60 @@ bool Reader::parseFile(const char *fileName, int numThreads)
         return false;
     }
 
+
+    while(buffer[currBuffIndex].lines.size() != 0)
+    {
+        //
+        //  Process remaining lines here
+        //
+
+
+        buffer[currBuffIndex].lines.erase(buffer[currBuffIndex].lines.begin());
+    }
+
+
+    // Signal all threads to stop
+    stop = true;
+
+
     // Join threads
     for (int thId = 0; thId < mNumThreads; ++thId)
     {
         mThreads[thId].join();
     }
+
     return true;
 }
 
 
-void Reader::_processLines()
+//
+// Thread function
+//
+void Reader::_processLines(int thId, Buffer *buffer)
 {
-    std::cout<<"Hello"<<std::endl;
-    while (true)
+    std::cout<<"ThId:"<<thId<<std::endl;
+    while (false==stop)
     {
-        // Check if buffer for this thread is ready
-        // If yes then start processing lines in it and
-        // mark as not ready atlast.
+        if(buffer->isReady)
+        {
+            //
+            //  Process lines here
+            //
 
-        if ( true==stop )
-	{
-            break;
-	}
+
+            // Clear the line once processed
+            buffer->lines.erase(buffer->lines.begin());
+            if(buffer->lines.size()==0) buffer->isReady=false;
+        }
+    }
+}
+
+
+void Reader::printParsedLines()
+{
+    while(parsedLines.size())
+    {
+        std::cout<<parsedLines.front()<<std::endl;
+        parsedLines.erase(parsedLines.begin());
     }
 }

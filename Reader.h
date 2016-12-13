@@ -19,6 +19,8 @@ public:
     // Returns true if successful or false if not.
     bool parseFile(const char *fileName="example.txt", int numThreads=4);
 
+    void printParsedLines();
+
 private:
     const char *mFileName;
     int mNumThreads;
@@ -33,8 +35,8 @@ private:
         std::vector<std::string> lines;
     };
 
-    void _processLines();    
+    void _processLines(int thId, Buffer *buffer);
 
-    std::vector<std::string> checkLines;
+    std::vector<std::string> parsedLines;
 };
 
