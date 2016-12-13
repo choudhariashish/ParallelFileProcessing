@@ -3,7 +3,10 @@
 #include <string>
 
 
-Reader::Reader()
+Reader::Reader() :
+    mFileName(NULL),
+    mNumThreads(0),
+    stop(false)
 {
 }
 
@@ -47,13 +50,13 @@ bool Reader::parseFile(const char *fileName, int numThreads)
 	        buffer[temp].isReady = true;
 	    }
 	}
+	stop = true;
 	// Check if current buffer has some remaining lines, if so, then
 	// process them here.
 	while ( buffer[currBuffIndex].lines.size() )
 	{
-	    std::vector<std::string> l = buffer[currBuffIndex].lines;
-            std::cout<<l.front()<<std::endl;
-	    l.erase(l.begin(), l.begin()+1);
+            std::cout<<buffer[currBuffIndex].lines.front()<<std::endl;
+	    buffer[currBuffIndex].lines.erase(buffer[currBuffIndex].lines.begin());
 	}
         inptFile.close();
     }
@@ -75,4 +78,11 @@ bool Reader::parseFile(const char *fileName, int numThreads)
 void Reader::_processLines()
 {
     std::cout<<"Hello"<<std::endl;
+    while (true)
+    {
+        if ( true==stop )
+	{
+            break;
+	}
+    }
 }
