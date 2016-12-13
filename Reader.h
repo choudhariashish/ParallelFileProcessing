@@ -34,5 +34,7 @@ private:
     };
 
     void _processLines();    
+
+    std::vector<std::string> checkLines;
 };
 

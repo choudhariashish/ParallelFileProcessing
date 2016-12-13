@@ -80,6 +80,10 @@ void Reader::_processLines()
     std::cout<<"Hello"<<std::endl;
     while (true)
     {
+        // Check if buffer for this thread is ready
+        // If yes then start processing lines in it and
+        // mark as not ready atlast.
+
         if ( true==stop )
 	{
             break;
