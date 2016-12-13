@@ -23,6 +23,7 @@ private:
     const char *mFileName;
     int mNumThreads;
     std::vector<std::thread> mThreads;
+    bool stop;
 
     class Buffer
     {
